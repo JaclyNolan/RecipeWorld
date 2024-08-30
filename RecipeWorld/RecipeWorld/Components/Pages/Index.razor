@@ -1,0 +1,12 @@
+﻿@page "/"
+@inject NavigationManager Navigation
+
+<h3>Redirecting...</h3>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Redirect to another page or URL
+        Navigation.NavigateTo("/recipes");
+    }
+}

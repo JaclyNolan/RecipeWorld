@@ -15,6 +15,7 @@ builder.Services
     })
     .AddMaterialProviders()
     .AddMaterialIcons();
+builder.Services.AddControllers();
 
 builder.WebHost.UseStaticWebAssets();
 // Load MongoDB settings from configuration
@@ -61,5 +62,6 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(RecipeWorld.Client._Imports).Assembly);
+app.MapControllers();
 
 app.Run();
