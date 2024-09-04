@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@attribute [Route(RecipeWorld.Constants.RouteNames.Index)]
 @inject NavigationManager Navigation
 
 <h3>Redirecting...</h3>
@@ -7,6 +7,6 @@
     protected override void OnInitialized()
     {
         // Redirect to another page or URL
-        Navigation.NavigateTo("/recipes");
+        Navigation.NavigateTo(RecipeWorld.Constants.RouteNames.Recipe.List);
     }
 }

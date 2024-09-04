@@ -1,0 +1,9 @@
+﻿@attribute [Route(RecipeWorld.Constants.RouteNames.Recipe.Edit)]
+
+<h3>Recipe Edit</h3>
+<p>Recipe: @RecipeId</p>
+
+@code {
+    [Parameter]
+    public string RecipeId { get; set; } = null!;
+}
