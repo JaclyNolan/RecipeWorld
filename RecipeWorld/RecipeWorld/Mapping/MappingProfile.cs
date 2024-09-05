@@ -11,6 +11,7 @@ namespace RecipeWorld.Mapping
             CreateMap<CreateRecipeRequestDto, Recipe>();
             CreateMap<UpdateRecipeRequestDto, Recipe>();
             CreateMap<Recipe, GetRecipeResponseDto>();
+            CreateMap<GetRecipeResponseDto, UpdateRecipeRequestDto>();
         }
     }
 }

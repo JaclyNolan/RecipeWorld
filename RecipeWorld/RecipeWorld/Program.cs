@@ -39,6 +39,7 @@ builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IValidator<Recipe>, RecipeValidator>();
 builder.Services.AddScoped<IValidator<string>, IngredientValidator>();
 builder.Services.AddScoped<IValidator<CreateRecipeRequestDto>, CreateRecipeRequestDtoValidator>();
+builder.Services.AddScoped<IValidator<UpdateRecipeRequestDto>, UpdateRecipeRequestDtoValidator>();
 
 
 // Add services to the container.

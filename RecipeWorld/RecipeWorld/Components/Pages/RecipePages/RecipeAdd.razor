@@ -17,7 +17,6 @@
 
 <EditForm Model="@recipe" OnValidSubmit="@HandleValidSubmit">
     <FluentValidationValidator />
-    <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
 
     <!-- Title Field -->
     <div>
@@ -102,6 +101,7 @@
             recipe.Ingredients.Clear();
             newIngredient = string.Empty;
             recipe.Instructions = string.Empty;
+            // navigationManager.NavigateTo(RecipeWorld.Constants.RouteNames.Recipe.List);
         }
         else
         {

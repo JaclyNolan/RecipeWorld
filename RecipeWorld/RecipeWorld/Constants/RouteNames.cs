@@ -15,7 +15,7 @@ namespace RecipeWorld.Constants
         {
             public const string List = "/recipes";
             public const string Create = "/recipes/create";
-            public const string Edit = "/recipes/edit/{" + nameof(RecipeEdit.RecipeId) + "}";
+            public const string Edit = "/recipes/edit/{" + nameof(RecipeEdit.recipeId) + "}";
             public static string GetEditRoute(string? recipeId) => !string.IsNullOrEmpty(recipeId) ? $"/recipes/edit/{recipeId}" : "/recipes/edit";
         }
     }

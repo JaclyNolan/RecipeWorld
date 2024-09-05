@@ -1,9 +1,146 @@
 ﻿@attribute [Route(RecipeWorld.Constants.RouteNames.Recipe.Edit)]
+@using FluentValidation
+@using FluentValidation.Results
+@using RecipeWorld.Shared.DTOs
+@using RecipeWorld.Services
+@rendermode InteractiveServer
+@inject IValidator<UpdateRecipeRequestDto> RecipeValidator
+@inject IRecipeService _recipeService
+@inject IValidator<string> IngredientValidator
+@inject IMapper _mapper
+@inject NavigationManager navigationManager
 
-<h3>Recipe Edit</h3>
-<p>Recipe: @RecipeId</p>
+<PageTitle>Recipe Edit</PageTitle>
+
+<Div Style="display: flex; justify-content: space-between">
+    <Heading Size="HeadingSize.Is3">Recipe Edit</Heading>
+</Div>
+<hr />
+
+@if (recipe != null)
+{
+    <EditForm Model="@recipe" OnValidSubmit="@HandleValidSubmit">
+        <FluentValidationValidator />
+
+        <!-- Title Field -->
+        <div>
+            <label>Title:</label><br />
+            <InputText @bind-Value="recipe.Title" />
+            <ValidationMessage For="@(() => recipe.Title)" />
+        </div>
+
+        <!-- Ingredients Input and List -->
+        <div>
+            <label>Ingredient:</label> <br />
+            <InputText @bind-Value="newIngredient" />
+            <button type="button" @onclick="AddIngredient">Add Ingredient</button>
+            @if (!string.IsNullOrEmpty(ingredientErrorMessage))
+            {
+                <br />
+
+                <span style="color: red;">@ingredientErrorMessage</span>
+            }
+
+            <ul>
+                @foreach (var ingredient in recipe.Ingredients)
+                {
+                    <li>
+                        @ingredient
+                        <button type="button" @onclick="() => RemoveIngredient(ingredient)">Remove</button>
+                    </li>
+                }
+            </ul>
+            <ValidationMessage For="@(() => recipe.Ingredients)" />
+        </div>
+
+        <!-- Instructions Field -->
+        <div>
+            <label>Instructions:</label><br />
+            <InputTextArea @bind-Value="recipe.Instructions" />
+            <ValidationMessage For="@(() => recipe.Instructions)" />
+        </div>
+
+        <!-- Submit Button -->
+        <Button Color="Color.Primary" type="ButtonType.Submit">
+            <Icon Name="IconName.Add"></Icon>
+        </Button>
+    </EditForm>
+}
+else
+{
+    <p>Loading recipe data...</p>
+}
 
 @code {
     [Parameter]
-    public string RecipeId { get; set; } = null!;
+    public string recipeId { get; set; } = null!;
+
+    UpdateRecipeRequestDto? recipe;
+    string newIngredient = string.Empty;
+    string? ingredientErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRecipe();
+    }
+
+    // Load the recipe based on RecipeId
+    private async Task LoadRecipe()
+    {
+        GetRecipeResponseDto recipeDto = await _recipeService.GetRecipeByIdAsync(recipeId);
+        recipe = _mapper.Map<UpdateRecipeRequestDto>(recipeDto);
+        if (recipe == null)
+        {
+            // Handle case when the recipe is not found
+            Console.WriteLine("Recipe not found");
+        }
+    }
+
+    // Add Ingredient to the List
+    async Task AddIngredient()
+    {
+        var result = await IngredientValidator.ValidateAsync(newIngredient);
+
+        if (!result.IsValid)
+        {
+            // Display error messages if validation fails
+            ingredientErrorMessage = result.Errors.FirstOrDefault()?.ErrorMessage;
+        }
+        else
+        {
+            // Add the ingredient to the list if valid
+            recipe?.Ingredients.Add(newIngredient);
+            newIngredient = string.Empty; // Clear the input
+            ingredientErrorMessage = null; // Clear error message
+        }
+    }
+
+    // Remove Ingredient from the List
+    private void RemoveIngredient(string ingredient)
+    {
+        recipe?.Ingredients.Remove(ingredient);
+    }
+
+    async Task HandleValidSubmit()
+    {
+        if (recipe != null)
+        {
+            ValidationResult result = await RecipeValidator.ValidateAsync(recipe);
+            if (result.IsValid)
+            {
+                // Update or save the modified recipe
+                await _recipeService.UpdateRecipeAsync(recipeId, recipe);
+                Console.WriteLine("Recipe updated successfully!");
+                navigationManager.NavigateTo(RecipeWorld.Constants.RouteNames.Recipe.List);
+            }
+            else
+            {
+                // Handle validation errors, display them to the user
+                foreach (var error in result.Errors)
+                {
+                    Console.WriteLine($"Validation Error: {error.ErrorMessage}");
+                }
+            }
+        }
+    }
 }

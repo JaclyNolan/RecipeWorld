@@ -94,7 +94,7 @@
         }
     };
     List<GetRecipeResponseDto> recipes = new();
-    HashSet<string> deletingRecipeIds = new HashSet<string>(); // Track which recipes are being deleted
+    HashSet<string> deletingRecipeIds = new HashSet<string>();
     bool isFetching = true;
 
     protected override async Task OnInitializedAsync()
@@ -115,12 +115,11 @@
 
     async Task HandleDelete(string id)
     {
-        deletingRecipeIds.Add(id);  // Mark as deleting
+        deletingRecipeIds.Add(id);
         try
         {
-            // await _recipeService.DeleteRecipeAsync(id);
-            await Task.Delay(1000);
-            recipes.RemoveAll(r => r.Id == id); // Remove recipe from the list
+            await _recipeService.DeleteRecipeAsync(id);
+            recipes.RemoveAll(r => r.Id == id);
         }
         catch (Exception ex)
         {
@@ -128,7 +127,7 @@
         }
         finally
         {
-            deletingRecipeIds.Remove(id);  // Remove from deleting set after operation
+            deletingRecipeIds.Remove(id);
         }
     }
     void HandleAdd()
