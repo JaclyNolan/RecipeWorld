@@ -1,7 +1,115 @@
 ﻿@attribute [Route(RecipeWorld.Constants.RouteNames.Recipe.Create)]
+@using FluentValidation
+@using FluentValidation.Results
+@using RecipeWorld.Shared.DTOs
+@using RecipeWorld.Services
+@rendermode InteractiveServer
+@inject IValidator<CreateRecipeRequestDto> RecipeValidator
+@inject IRecipeService _recipeService
+@inject IValidator<string> IngredientValidator
 
-<h3>RecipeAdd</h3>
+<PageTitle>Recipe Add</PageTitle>
+
+<Div Style="display: flex; justify-content: space-between">
+    <Heading Size="HeadingSize.Is3">Recipe Add</Heading>
+</Div>
+<hr />
+
+<EditForm Model="@recipe" OnValidSubmit="@HandleValidSubmit">
+    <FluentValidationValidator />
+    <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
+
+    <!-- Title Field -->
+    <div>
+        <label>Title:</label><br />
+        <InputText @bind-Value="recipe.Title" />
+        <ValidationMessage For="@(() => recipe.Title)" />
+    </div>
+
+    <!-- Ingredients Input and List -->
+    <div>
+        <label>Ingredient:</label> <br />
+        <InputText @bind-Value="newIngredient" />
+        <button type="button" @onclick="AddIngredient">Add Ingredient</button>
+        @if (!string.IsNullOrEmpty(ingredientErrorMessage))
+        {
+            <br /><span style="color: red;">@ingredientErrorMessage</span>
+        }
+
+        <ul>
+            @foreach (var ingredient in recipe.Ingredients)
+            {
+                <li>
+                    @ingredient
+                    <button type="button" @onclick="() => RemoveIngredient(ingredient)">Remove</button>
+                </li>
+            }
+        </ul>
+        <ValidationMessage For="@(() => recipe.Ingredients)" />
+    </div>
+
+    <!-- Instructions Field -->
+    <div>
+        <label>Instructions:</label><br />
+        <InputTextArea @bind-Value="recipe.Instructions" />
+        <ValidationMessage For="@(() => recipe.Instructions)" />
+    </div>
+
+    <!-- Submit Button -->
+    <Button Color="Color.Primary" type="ButtonType.Submit">
+        <Icon Name="IconName.Add"></Icon>
+    </Button>
+</EditForm>
 
 @code {
+    CreateRecipeRequestDto recipe = new CreateRecipeRequestDto();
+    string newIngredient = string.Empty;
+    string? ingredientErrorMessage;
 
+    // Add Ingredient to the List
+    async Task AddIngredient()
+    {
+        var result = await IngredientValidator.ValidateAsync(newIngredient);
+
+        if (!result.IsValid)
+        {
+            // Display error messages if validation fails
+            ingredientErrorMessage = result.Errors.FirstOrDefault()?.ErrorMessage;
+        }
+        else
+        {
+            // Add the ingredient to the list if valid
+            recipe.Ingredients.Add(newIngredient);
+            newIngredient = string.Empty; // Clear the input
+            ingredientErrorMessage = null; // Clear error message
+        }
+    }
+
+    // Remove Ingredient from the List
+    private void RemoveIngredient(string ingredient)
+    {
+        recipe.Ingredients.Remove(ingredient);
+    }
+
+    async Task HandleValidSubmit()
+    {
+        ValidationResult result = await RecipeValidator.ValidateAsync(recipe);
+        if (result.IsValid)
+        {
+            // Save or process the valid recipe
+            await _recipeService.CreateRecipeAsync(recipe);
+            recipe.Title = string.Empty;
+            recipe.Ingredients.Clear();
+            newIngredient = string.Empty;
+            recipe.Instructions = string.Empty;
+        }
+        else
+        {
+            // Handle validation errors, display them to the user
+            foreach (var error in result.Errors)
+            {
+                Console.WriteLine($"Validation Error: {error.ErrorMessage}");
+            }
+        }
+    }
 }

@@ -1,10 +1,13 @@
 using Blazorise;
 using Blazorise.Icons.Material;
 using Blazorise.Material;
+using FluentValidation;
 using MongoDB.Driver;
 using RecipeWorld.Components;
 using RecipeWorld.Services;
 using RecipeWorld.Settings;
+using RecipeWorld.Shared.DTOs;
+using RecipeWorld.Shared.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +36,10 @@ builder.Services.AddSingleton<IMongoClient, MongoClient>(sp =>
 });
 builder.Services.AddSingleton<MongoDBContext>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
+builder.Services.AddScoped<IValidator<Recipe>, RecipeValidator>();
+builder.Services.AddScoped<IValidator<string>, IngredientValidator>();
+builder.Services.AddScoped<IValidator<CreateRecipeRequestDto>, CreateRecipeRequestDtoValidator>();
+
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

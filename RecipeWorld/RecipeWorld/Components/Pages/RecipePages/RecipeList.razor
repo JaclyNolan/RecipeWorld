@@ -1,4 +1,4 @@
-﻿@attribute [Route(RecipeWorld.Constants.RouteNames.Recipe.List)] 
+﻿@attribute [Route(RecipeWorld.Constants.RouteNames.Recipe.List)]
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
@@ -8,6 +8,13 @@
 @using RecipeWorld.Services
 
 <PageTitle>Recipe List</PageTitle>
+
+<Div Style="display: flex; justify-content: space-between">
+    <Heading Size="HeadingSize.Is3">Recipe List</Heading>
+    <Button Color="Color.Primary" Clicked="() => HandleAdd()">
+        <Icon Name="IconName.Add"></Icon>
+    </Button>
+</Div>
 
 <Container>
     <Table Hoverable>
@@ -44,7 +51,7 @@
                         <TableRowHeader>@(recipe.index + 1)</TableRowHeader>
                         <TableRowCell>@recipe.value.Title</TableRowCell>
                         <TableRowCell>
-                            <Button Color="Color.Primary" Size="Size.Small" Clicked="() => HandleEdit(recipe.value.Id)" Disabled="@deletingRecipeIds.Contains(recipe.value.Id)" >
+                            <Button Color="Color.Primary" Size="Size.Small" Clicked="() => HandleEdit(recipe.value.Id)" Disabled="@deletingRecipeIds.Contains(recipe.value.Id)">
                                 <Icon Name="IconName.Edit"></Icon>
                             </Button>
                             <Button Color="Color.Danger" Size="Size.Small" Clicked="() => HandleDelete(recipe.value.Id)" Disabled="@deletingRecipeIds.Contains(recipe.value.Id)">
@@ -123,7 +130,11 @@
         {
             deletingRecipeIds.Remove(id);  // Remove from deleting set after operation
         }
-    }   
+    }
+    void HandleAdd()
+    {
+        Navigation.NavigateTo(RecipeWorld.Constants.RouteNames.Recipe.Create);
+    }
     void HandleEdit(string id)
     {
         Navigation.NavigateTo(RecipeWorld.Constants.RouteNames.Recipe.GetEditRoute(id));

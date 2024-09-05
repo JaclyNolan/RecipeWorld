@@ -4,8 +4,9 @@
 <h3>Redirecting...</h3>
 
 @code {
-    protected override void OnInitialized()
+    protected async override Task OnInitializedAsync()
     {
+        base.OnInitialized();
         // Redirect to another page or URL
         Navigation.NavigateTo(RecipeWorld.Constants.RouteNames.Recipe.List);
     }
