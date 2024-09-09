@@ -51,11 +51,11 @@
                         <TableRowHeader>@(recipe.index + 1)</TableRowHeader>
                         <TableRowCell>@recipe.value.Title</TableRowCell>
                         <TableRowCell>
-                            <Button Color="Color.Primary" Size="Size.Small" Clicked="() => HandleEdit(recipe.value.Id)" Disabled="@deletingRecipeIds.Contains(recipe.value.Id)">
+                            <Button Color="Color.Primary" Size="Size.Small" Clicked="() => HandleEdit(recipe.value.Id)" Disabled="@disableButtonRecipeIds.Contains(recipe.value.Id)">
                                 <Icon Name="IconName.Edit"></Icon>
                             </Button>
-                            <Button Color="Color.Danger" Size="Size.Small" Clicked="() => ShowDeleteModal(recipe.value)" Disabled="@deletingRecipeIds.Contains(recipe.value.Id)">
-                                @if (deletingRecipeIds.Contains(recipe.value.Id))
+                            <Button Color="Color.Danger" Size="Size.Small" Clicked="() => ShowDeleteModal(recipe.value)" Disabled="@disableButtonRecipeIds.Contains(recipe.value.Id)">
+                                @if (disableButtonRecipeIds.Contains(recipe.value.Id))
                                 {
                                     <Text>Deleting</Text>
                                 }
@@ -117,7 +117,7 @@
         }
     };
     List<GetRecipeResponseDto> recipes = new();
-    HashSet<string> deletingRecipeIds = new HashSet<string>();
+    HashSet<string> disableButtonRecipeIds = new HashSet<string>();
     bool isFetching = true;
 
     protected override async Task OnInitializedAsync()
@@ -150,7 +150,8 @@
 
     async Task HandleDelete(string id)
     {
-        deletingRecipeIds.Add(id);
+        disableButtonRecipeIds.Add(id);
+        await HideDeleteModal();
         try
         {
             await _recipeService.DeleteRecipeAsync(id);
@@ -162,8 +163,7 @@
         }
         finally
         {
-            deletingRecipeIds.Remove(id);
-            await HideDeleteModal();
+            disableButtonRecipeIds.Remove(id);
         }
     }
     void HandleAdd()
