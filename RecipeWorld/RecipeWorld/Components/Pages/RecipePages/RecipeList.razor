@@ -54,7 +54,7 @@
                             <Button Color="Color.Primary" Size="Size.Small" Clicked="() => HandleEdit(recipe.value.Id)" Disabled="@deletingRecipeIds.Contains(recipe.value.Id)">
                                 <Icon Name="IconName.Edit"></Icon>
                             </Button>
-                            <Button Color="Color.Danger" Size="Size.Small" Clicked="() => HandleDelete(recipe.value.Id)" Disabled="@deletingRecipeIds.Contains(recipe.value.Id)">
+                            <Button Color="Color.Danger" Size="Size.Small" Clicked="() => ShowDeleteModal(recipe.value)" Disabled="@deletingRecipeIds.Contains(recipe.value.Id)">
                                 @if (deletingRecipeIds.Contains(recipe.value.Id))
                                 {
                                     <Text>Deleting</Text>
@@ -72,12 +72,35 @@
     </Table>
 </Container>
 
+<Modal @ref="deleteModalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Are you sure to delete this?</ModalTitle>
+        </ModalHeader>
+        <ModalBody>
+            @if (selectedRecipe != null)
+            {
+                <Div>Id: @selectedRecipe.Id</Div>
+                <Div>Title: @selectedRecipe.Title</Div>
+            }
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideDeleteModal">Close</Button>
+            @if (selectedRecipe != null)
+            {
+                <Button Color="Color.Primary" Clicked="() => HandleDelete(selectedRecipe.Id)">Delete</Button>
+            }
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
 @code {
     public class TableHeadInfo
     {
         public string Label { get; set; } = null!;
     }
-
+    Modal deleteModalRef;
+    GetRecipeResponseDto? selectedRecipe = null;
     readonly List<TableHeadInfo> TABLE_HEAD = new List<TableHeadInfo>
     {
         new TableHeadInfo
@@ -113,6 +136,18 @@
         }
     }
 
+    Task ShowDeleteModal(GetRecipeResponseDto recipe)
+    {
+        selectedRecipe = recipe;
+        return deleteModalRef.Show();
+    }
+
+    Task HideDeleteModal()
+    {
+        selectedRecipe = null;
+        return deleteModalRef.Hide();
+    }
+
     async Task HandleDelete(string id)
     {
         deletingRecipeIds.Add(id);
@@ -128,6 +163,7 @@
         finally
         {
             deletingRecipeIds.Remove(id);
+            await HideDeleteModal();
         }
     }
     void HandleAdd()
