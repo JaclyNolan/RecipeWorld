@@ -1,9 +1,10 @@
 ﻿@attribute [Route(RecipeWorld.Constants.RouteNames.Recipe.Edit)]
+@attribute [StreamRendering]
 @using FluentValidation
 @using FluentValidation.Results
 @using RecipeWorld.Shared.DTOs
 @using RecipeWorld.Services
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender:false))
 @inject IValidator<UpdateRecipeRequestDto> RecipeValidator
 @inject IRecipeService _recipeService
 @inject IValidator<string> IngredientValidator
@@ -84,16 +85,16 @@ else
         await LoadRecipe();
     }
 
-    // Load the recipe based on RecipeId
     private async Task LoadRecipe()
     {
-        GetRecipeResponseDto recipeDto = await _recipeService.GetRecipeByIdAsync(recipeId);
-        recipe = _mapper.Map<UpdateRecipeRequestDto>(recipeDto);
-        if (recipe == null)
+        GetRecipeResponseDto? recipeDto = await _recipeService.GetRecipeByIdAsync(recipeId);
+
+        if (recipeDto == null)
         {
-            // Handle case when the recipe is not found
-            Console.WriteLine("Recipe not found");
+            navigationManager.NavigateTo(RecipeWorld.Constants.RouteNames.NotFound);
+            return;
         }
+        recipe = _mapper.Map<UpdateRecipeRequestDto>(recipeDto);
     }
 
     // Add Ingredient to the List
@@ -109,7 +110,7 @@ else
         else
         {
             // Add the ingredient to the list if valid
-            recipe?.Ingredients.Add(newIngredient);
+            recipe.Ingredients.Add(newIngredient);
             newIngredient = string.Empty; // Clear the input
             ingredientErrorMessage = null; // Clear error message
         }
@@ -118,7 +119,7 @@ else
     // Remove Ingredient from the List
     private void RemoveIngredient(string ingredient)
     {
-        recipe?.Ingredients.Remove(ingredient);
+        recipe.Ingredients.Remove(ingredient);
     }
 
     async Task HandleValidSubmit()
@@ -130,7 +131,6 @@ else
             {
                 // Update or save the modified recipe
                 await _recipeService.UpdateRecipeAsync(recipeId, recipe);
-                Console.WriteLine("Recipe updated successfully!");
                 navigationManager.NavigateTo(RecipeWorld.Constants.RouteNames.Recipe.List);
             }
             else

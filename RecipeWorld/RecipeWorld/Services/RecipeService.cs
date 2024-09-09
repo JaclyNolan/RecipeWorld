@@ -35,7 +35,14 @@ namespace RecipeWorld.Services
 
         public async Task<GetRecipeResponseDto?> GetRecipeByIdAsync(string id)
         {
-            return _mapper.Map<GetRecipeResponseDto?>(await _recipeCollection.Find(recipe => recipe.Id == id & recipe.DeletedAt == null).FirstOrDefaultAsync());
+            try
+            {
+                return _mapper.Map<GetRecipeResponseDto?>(await _recipeCollection.Find(recipe => recipe.Id == id & recipe.DeletedAt == null).FirstOrDefaultAsync());
+            }
+            catch (FormatException)
+            {
+            }
+            return null;
         }
 
         public async Task<GetRecipeResponseDto> CreateRecipeAsync(CreateRecipeRequestDto createRecipeRequest)
@@ -55,8 +62,8 @@ namespace RecipeWorld.Services
 
         public async Task DeleteRecipeAsync(string id)
         {
-            var recipe = await _recipeCollection.Find(recipe => recipe.Id == id).FirstOrDefaultAsync();
-            if (recipe == null) throw new NotFoundException("Recipe doesn't exist");
+            var recipe = await _recipeCollection.Find(recipe => recipe.Id == id).FirstOrDefaultAsync()
+                ?? throw new NotFoundException("Recipe doesn't exist");
             recipe.DeletedAt = DateTime.UtcNow;
             await _recipeCollection.ReplaceOneAsync(recipe => recipe.Id == id, recipe);
         }
