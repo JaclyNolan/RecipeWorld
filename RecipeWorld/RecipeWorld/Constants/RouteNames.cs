@@ -11,6 +11,11 @@ namespace RecipeWorld.Constants
         public const string NotFound = "/404";
         public const string ServerError = "/server-error";
 
+        public static class Hub
+        {
+            public const string Recipe = "/hubs/recipe";
+        }
+
         public static class Recipe
         {
             public const string List = "/recipes";

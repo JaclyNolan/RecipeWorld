@@ -4,6 +4,7 @@
 @using FluentValidation.Results
 @using RecipeWorld.Shared.DTOs
 @using RecipeWorld.Services
+@using RecipeWorld.Constants
 @rendermode @(new InteractiveServerRenderMode(prerender:false))
 @inject IValidator<UpdateRecipeRequestDto> RecipeValidator
 @inject IRecipeService _recipeService
@@ -131,7 +132,7 @@ else
             {
                 // Update or save the modified recipe
                 await _recipeService.UpdateRecipeAsync(recipeId, recipe);
-                navigationManager.NavigateTo(RecipeWorld.Constants.RouteNames.Recipe.List);
+                // navigationManager.NavigateTo(RouteNames.Recipe.List);
             }
             else
             {

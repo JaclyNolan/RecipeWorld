@@ -1,11 +1,15 @@
 ﻿@attribute [Route(RecipeWorld.Constants.RouteNames.Recipe.List)]
 @attribute [StreamRendering]
+@implements IDisposable
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
 @inject IRecipeService _recipeService
+@inject PersistentComponentState ApplicationState
 @using RecipeWorld.Shared.Entities
 @using RecipeWorld.Shared.DTOs
 @using RecipeWorld.Services
+@using RecipeWorld.Constants
+@using Microsoft.AspNetCore.SignalR.Client
 
 <PageTitle>Recipe List</PageTitle>
 
@@ -17,6 +21,18 @@
 </Div>
 
 <Container>
+    <Div>
+        @if (IsConnected)
+        {
+            <Text>Live: </Text>
+            <Icon Name="IconName.DotCircle" style="color: red"/>
+        }
+        else
+        {
+            <Text>Not Live: </Text>
+            <Icon Name="IconName.DotCircle" style="color: gray" />
+        }
+    </Div>
     <Table Hoverable>
         <TableHeader>
             <TableRow>
@@ -117,22 +133,77 @@
         }
     };
     List<GetRecipeResponseDto> recipes = new();
+    PersistingComponentStateSubscription persistingSubscription;
     HashSet<string> disableButtonRecipeIds = new HashSet<string>();
     bool isFetching = true;
+    HubConnection? hubConnection;
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        // Save data to be retrived again on the second Initialized
+        persistingSubscription =
+            ApplicationState.RegisterOnPersisting(PersistList);
+
+        if (!ApplicationState.TryTakeFromJson<List<GetRecipeResponseDto>>(
+        nameof(recipes), out var restoredRecipes))
+        {
+            try
+            {
+                recipes = (await _recipeService.GetAllRecipesAsync()).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching recipes: {ex.Message}");
+            }
+        }
+        else
+        {
+            recipes = restoredRecipes!;
+        }
+        isFetching = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await SetUpRecipeSignalRConnection();
+        }
+    }
+
+    Task PersistList()
+    {
+        ApplicationState.PersistAsJson(nameof(recipes), recipes);
+        return Task.CompletedTask;
+    }
+
+    void IDisposable.Dispose() => persistingSubscription.Dispose();
+
+    async Task SetUpRecipeSignalRConnection()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri(RouteNames.Hub.Recipe))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On("ReceiveRecipeUpdate", async () =>
         {
             recipes = (await _recipeService.GetAllRecipesAsync()).ToList();
-        }
-        catch (Exception ex)
+            await InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public bool IsConnected =>
+        hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
         {
-            Console.WriteLine($"Error fetching recipes: {ex.Message}");
-        }
-        finally
-        {
-            isFetching = false;
+            await hubConnection.DisposeAsync();
         }
     }
 
@@ -168,10 +239,10 @@
     }
     void HandleAdd()
     {
-        Navigation.NavigateTo(RecipeWorld.Constants.RouteNames.Recipe.Create);
+        Navigation.NavigateTo(RouteNames.Recipe.Create);
     }
     void HandleEdit(string id)
     {
-        Navigation.NavigateTo(RecipeWorld.Constants.RouteNames.Recipe.GetEditRoute(id));
+        Navigation.NavigateTo(RouteNames.Recipe.GetEditRoute(id));
     }
 }

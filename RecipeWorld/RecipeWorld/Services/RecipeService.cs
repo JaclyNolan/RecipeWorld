@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using MongoDB.Driver;
 using RecipeWorld.Exceptions;
+using RecipeWorld.Hubs;
 using RecipeWorld.Shared.DTOs;
 using RecipeWorld.Shared.Entities;
 
@@ -20,12 +22,14 @@ namespace RecipeWorld.Services
         private readonly IMapper _mapper;
         private readonly MongoDBContext _context;
         private readonly IMongoCollection<Recipe> _recipeCollection;
+        private readonly IHubContext<RecipeHub> _hubContext;
 
-        public RecipeService(MongoDBContext context, IMapper mapper)
+        public RecipeService(MongoDBContext context, IMapper mapper, IHubContext<RecipeHub> hubContext)
         {
             _mapper = mapper;
             _context = context;
             _recipeCollection = _context.GetRecipeCollection();
+            _hubContext = hubContext;
         }
 
         public async Task<IEnumerable<GetRecipeResponseDto>> GetAllRecipesAsync()
@@ -49,6 +53,7 @@ namespace RecipeWorld.Services
         {
             var recipe = _mapper.Map<Recipe>(createRecipeRequest);
             await _recipeCollection.InsertOneAsync(recipe);
+            await _hubContext.Clients.All.SendAsync("ReceiveRecipeUpdate");
             return _mapper.Map<GetRecipeResponseDto>(recipe);
         }
 
@@ -58,6 +63,7 @@ namespace RecipeWorld.Services
             newRecipe.UpdatedAt = DateTime.UtcNow;
             newRecipe.Id = id;
             await _recipeCollection.ReplaceOneAsync(recipe => recipe.Id == id, newRecipe);
+            await _hubContext.Clients.All.SendAsync("ReceiveRecipeUpdate");
         }
 
         public async Task DeleteRecipeAsync(string id)
@@ -66,6 +72,7 @@ namespace RecipeWorld.Services
                 ?? throw new NotFoundException("Recipe doesn't exist");
             recipe.DeletedAt = DateTime.UtcNow;
             await _recipeCollection.ReplaceOneAsync(recipe => recipe.Id == id, recipe);
+            await _hubContext.Clients.All.SendAsync("ReceiveRecipeUpdate");
         }
     }
 }

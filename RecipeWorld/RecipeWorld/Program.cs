@@ -2,8 +2,11 @@ using Blazorise;
 using Blazorise.Icons.Material;
 using Blazorise.Material;
 using FluentValidation;
+using Microsoft.AspNetCore.ResponseCompression;
 using MongoDB.Driver;
 using RecipeWorld.Components;
+using RecipeWorld.Constants;
+using RecipeWorld.Hubs;
 using RecipeWorld.Services;
 using RecipeWorld.Settings;
 using RecipeWorld.Shared.DTOs;
@@ -18,13 +21,19 @@ builder.Services
     })
     .AddMaterialProviders()
     .AddMaterialIcons();
-builder.Services.AddControllers();
+//builder.Services.AddControllers();
 
 builder.WebHost.UseStaticWebAssets();
 // Load MongoDB settings from configuration
 builder.Services.Configure<MongoDBSettings>(
     builder.Configuration.GetSection("MongoDBSettings"));
 
+builder.Services.AddSignalR();
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        ["application/octet-stream"]);
+});
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 
@@ -66,10 +75,13 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
+app.UseResponseCompression();
+app.MapHub<RecipeHub>(RouteNames.Hub.Recipe);
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(RecipeWorld.Client._Imports).Assembly);
-app.MapControllers();
+//app.MapControllers();
 
 app.Run();
