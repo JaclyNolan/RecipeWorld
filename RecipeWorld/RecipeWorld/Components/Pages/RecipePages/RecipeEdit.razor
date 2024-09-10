@@ -132,7 +132,7 @@ else
             {
                 // Update or save the modified recipe
                 await _recipeService.UpdateRecipeAsync(recipeId, recipe);
-                // navigationManager.NavigateTo(RouteNames.Recipe.List);
+                navigationManager.NavigateTo(RouteNames.Recipe.List);
             }
             else
             {

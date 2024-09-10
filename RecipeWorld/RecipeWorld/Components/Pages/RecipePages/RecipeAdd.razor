@@ -3,10 +3,12 @@
 @using FluentValidation.Results
 @using RecipeWorld.Shared.DTOs
 @using RecipeWorld.Services
+@using RecipeWorld.Constants
 @rendermode InteractiveServer
 @inject IValidator<CreateRecipeRequestDto> RecipeValidator
 @inject IRecipeService _recipeService
 @inject IValidator<string> IngredientValidator
+@inject NavigationManager navigationManager
 
 <PageTitle>Recipe Add</PageTitle>
 
@@ -101,7 +103,7 @@
             recipe.Ingredients.Clear();
             newIngredient = string.Empty;
             recipe.Instructions = string.Empty;
-            // navigationManager.NavigateTo(RecipeWorld.Constants.RouteNames.Recipe.List);
+            navigationManager.NavigateTo(RouteNames.Recipe.List);
         }
         else
         {
