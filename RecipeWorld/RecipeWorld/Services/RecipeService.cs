@@ -20,15 +20,13 @@ namespace RecipeWorld.Services
     public class RecipeService : IRecipeService
     {
         private readonly IMapper _mapper;
-        private readonly MongoDBContext _context;
         private readonly IMongoCollection<Recipe> _recipeCollection;
         private readonly IHubContext<RecipeHub> _hubContext;
 
         public RecipeService(MongoDBContext context, IMapper mapper, IHubContext<RecipeHub> hubContext)
         {
             _mapper = mapper;
-            _context = context;
-            _recipeCollection = _context.GetRecipeCollection();
+            _recipeCollection = context.GetRecipeCollection();
             _hubContext = hubContext;
         }
 

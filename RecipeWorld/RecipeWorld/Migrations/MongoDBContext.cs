@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using RecipeWorld.Constants;
 using RecipeWorld.Settings;
 using RecipeWorld.Shared.Entities;
 
@@ -14,6 +15,16 @@ public class MongoDBContext
 
     public IMongoCollection<Recipe> GetRecipeCollection()
     {
-        return _database.GetCollection<Recipe>("recipe");
+        return _database.GetCollection<Recipe>(MongoDbCollectionNames.Recipe);
+    }
+
+    public IMongoCollection<ApplicationUser> GetUserCollection()
+    {
+        return _database.GetCollection<ApplicationUser>(MongoDbCollectionNames.ApplicationUser);
+    }
+
+    public IMongoCollection<ApplicationRole> GetRoleCollection()
+    {
+        return _database.GetCollection<ApplicationRole>(MongoDbCollectionNames.ApplicationRole);
     }
 }

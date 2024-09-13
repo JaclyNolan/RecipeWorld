@@ -24,5 +24,4 @@ namespace RecipeWorld.Constants
             public static string GetEditRoute(string? recipeId) => !string.IsNullOrEmpty(recipeId) ? $"/recipes/edit/{recipeId}" : "/recipes/edit";
         }
     }
-
 }

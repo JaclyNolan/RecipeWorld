@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\RecipeWorld.Shared\RecipeWorld.Shared.csproj" />
     <ProjectReference Include="..\RecipeWorld.Client\RecipeWorld.Client.csproj" />
+    <PackageReference Include="AspNetCore.Identity.MongoDbCore" Version="3.1.2" />
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="Blazored.FluentValidation" Version="2.2.0" />
     <PackageReference Include="Blazorise.Icons.Material" Version="1.6.1" />
@@ -16,6 +17,7 @@
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.8" />
     <PackageReference Include="MongoDB.Driver" Version="2.28.0" />
   </ItemGroup>
 

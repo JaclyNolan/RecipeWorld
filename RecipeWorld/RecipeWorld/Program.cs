@@ -2,11 +2,14 @@ using Blazorise;
 using Blazorise.Icons.Material;
 using Blazorise.Material;
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using RecipeWorld.Components;
 using RecipeWorld.Constants;
 using RecipeWorld.Hubs;
+using RecipeWorld.Migrations;
 using RecipeWorld.Services;
 using RecipeWorld.Settings;
 using RecipeWorld.Shared.DTOs;
@@ -36,6 +39,13 @@ builder.Services.AddResponseCompression(opts =>
 });
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
+var mongoDbSettings = builder.Configuration.GetSection("MongoDBSettings").Get<MongoDBSettings>();
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
+    .AddMongoDbStores<ApplicationUser, ApplicationRole, ObjectId>(
+        builder.Configuration.GetConnectionString("MongoDB"),
+        mongoDbSettings!.DatabaseName
+    )
+    .AddDefaultTokenProviders();
 
 // Register MongoClient using the connection string from ConnectionStrings
 builder.Services.AddSingleton<IMongoClient, MongoClient>(sp =>
@@ -62,6 +72,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
+    await app.SeedDataAsync();
 }
 else
 {
