@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_DATABASE: RecipeCentral
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  blazor-app:
+#   container_name: recipeworld-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080" 
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__MongoDB: "mongodb://mongodb:27017"
+    depends_on:
+      - mongodb 
+volumes:
+  mongo-data:
+    driver: local
