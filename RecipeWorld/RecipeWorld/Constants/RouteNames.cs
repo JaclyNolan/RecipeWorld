@@ -5,6 +5,7 @@ namespace RecipeWorld.Constants
     public static class RouteNames
     {
         public const string Login = "/login";
+        public const string Logout = "/logout";
         public const string Index = "/";
         public const string Unauthorized = "/unauthorized";
         public const string Forbidden = "/forbidden";

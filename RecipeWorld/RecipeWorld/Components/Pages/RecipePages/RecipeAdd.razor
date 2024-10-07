@@ -1,9 +1,8 @@
-﻿@attribute [Route(RecipeWorld.Constants.RouteNames.Recipe.Create)]
+﻿@attribute [Route(RouteNames.Recipe.Create)]
 @using FluentValidation
 @using FluentValidation.Results
 @using RecipeWorld.Shared.DTOs
 @using RecipeWorld.Services
-@using RecipeWorld.Constants
 @rendermode InteractiveServer
 @inject IValidator<CreateRecipeRequestDto> RecipeValidator
 @inject IRecipeService _recipeService

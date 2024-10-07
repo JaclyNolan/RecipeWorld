@@ -1,10 +1,9 @@
-﻿@attribute [Route(RecipeWorld.Constants.RouteNames.Recipe.Edit)]
+﻿@attribute [Route(RouteNames.Recipe.Edit)]
 @attribute [StreamRendering]
 @using FluentValidation
 @using FluentValidation.Results
 @using RecipeWorld.Shared.DTOs
 @using RecipeWorld.Services
-@using RecipeWorld.Constants
 @rendermode @(new InteractiveServerRenderMode(prerender:false))
 @inject IValidator<UpdateRecipeRequestDto> RecipeValidator
 @inject IRecipeService _recipeService
@@ -92,7 +91,7 @@ else
 
         if (recipeDto == null)
         {
-            navigationManager.NavigateTo(RecipeWorld.Constants.RouteNames.NotFound);
+            navigationManager.NavigateTo(RouteNames.NotFound);
             return;
         }
         recipe = _mapper.Map<UpdateRecipeRequestDto>(recipeDto);

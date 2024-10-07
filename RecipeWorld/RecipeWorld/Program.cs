@@ -2,11 +2,13 @@ using Blazorise;
 using Blazorise.Icons.Material;
 using Blazorise.Material;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using RecipeWorld.Components;
+using RecipeWorld.Components.Account;
 using RecipeWorld.Constants;
 using RecipeWorld.Hubs;
 using RecipeWorld.Migrations;
@@ -31,6 +33,7 @@ builder.WebHost.UseStaticWebAssets();
 builder.Services.Configure<MongoDBSettings>(
     builder.Configuration.GetSection("MongoDBSettings"));
 
+builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
 builder.Services.AddResponseCompression(opts =>
 {
@@ -39,6 +42,17 @@ builder.Services.AddResponseCompression(opts =>
 });
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "auth_token";
+        options.LoginPath = RouteNames.Login;
+        options.Cookie.MaxAge = TimeSpan.FromMinutes(30);
+        options.AccessDeniedPath = RouteNames.Index;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+    });
+builder.Services.AddAuthorization();
 var mongoDbSettings = builder.Configuration.GetSection("MongoDBSettings").Get<MongoDBSettings>();
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddMongoDbStores<ApplicationUser, ApplicationRole, ObjectId>(
@@ -54,11 +68,12 @@ builder.Services.AddSingleton<IMongoClient, MongoClient>(sp =>
     return new MongoClient(connectionString);
 });
 builder.Services.AddSingleton<MongoDBContext>();
+builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
-builder.Services.AddScoped<IValidator<Recipe>, RecipeValidator>();
-builder.Services.AddScoped<IValidator<string>, IngredientValidator>();
-builder.Services.AddScoped<IValidator<CreateRecipeRequestDto>, CreateRecipeRequestDtoValidator>();
-builder.Services.AddScoped<IValidator<UpdateRecipeRequestDto>, UpdateRecipeRequestDtoValidator>();
+builder.Services.AddSingleton<IValidator<Recipe>, RecipeValidator>();
+builder.Services.AddSingleton<IValidator<string>, IngredientValidator>();
+builder.Services.AddSingleton<IValidator<CreateRecipeRequestDto>, CreateRecipeRequestDtoValidator>();
+builder.Services.AddSingleton<IValidator<UpdateRecipeRequestDto>, UpdateRecipeRequestDtoValidator>();
 
 
 // Add services to the container.
@@ -94,5 +109,38 @@ app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(RecipeWorld.Client._Imports).Assembly);
 //app.MapControllers();
+
+//app.MapPost(RouteNames.LoginPost, async (
+//    HttpContext context,
+//    [FromServices] SignInManager<ApplicationUser> signInManager) =>
+//{
+//    var form = context.Request.Form;
+//    var username = form["Username"];
+//    var password = form["Password"];
+
+//    if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+//    {
+//        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+//        await context.Response.WriteAsync("Invalid credentials: Missing username or password.");
+//        return;
+//    }
+
+//    // Validate credentials
+//    var result = await signInManager.PasswordSignInAsync(
+//        username, password, isPersistent: false, lockoutOnFailure: false);
+
+//    if (result.Succeeded)
+//    {
+//        // Redirect to the home page on successful login
+//        context.Response.Redirect(RouteNames.Index);
+//    }
+//    else
+//    {
+//        // Respond with 401 Unauthorized for invalid credentials
+//        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+//        await context.Response.WriteAsync("Invalid credentials: Username or password is incorrect.");
+//    }
+//});
+app.MapAdditionalIdentityEndpoints();
 
 app.Run();
